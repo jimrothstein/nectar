@@ -36,7 +36,7 @@ get_channel_id <- function(handle,
                            cache_disk = getOption("yt_cache_disk", FALSE),
                            cache_key = getOption("yt_cache_key", NULL),
                            token = NULL) {
-  res <- yt_call_api(
+  res <- call_api(
     endpoint = "channels",
     query = list(
       part = "id",
