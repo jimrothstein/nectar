@@ -6,6 +6,7 @@
 \usage{
 call_api(
   base_url,
+  ...,
   path = NULL,
   query = NULL,
   body = NULL,
@@ -17,6 +18,7 @@ call_api(
   response_parser_args = list(),
   next_req = NULL,
   max_reqs = Inf,
+  max_tries_per_req = 3,
   user_agent = "nectar (https://nectar.api2r.org)"
 )
 }
@@ -25,11 +27,17 @@ call_api(
 In some cases there may be a family of base URLs, from which you will need
 to choose one.}
 
-\item{path}{The route to an API endpoint. Optionally, a list with the path
-plus variables to \code{\link[glue:glue]{glue::glue()}} into the path.}
+\item{...}{These dots are for future extensions and must be empty.}
 
-\item{query}{An optional list of parameters to pass in the query portion of
-the request.}
+\item{path}{The route to an API endpoint. Optionally, a list or character
+vector with the path as one or more unnamed arguments (which will be
+concatenated with "/") plus named arguments to \code{\link[glue:glue]{glue::glue()}} into the
+path.}
+
+\item{query}{An optional list or character vector of parameters to pass in
+the query portion of the request. Can also include a \code{.multi} argument to
+pass to \code{\link[httr2:req_url]{httr2::req_url_query()}} to control how elements containing
+multiple values are handled.}
 
 \item{body}{An object to use as the body of the request. If any component of
 the body is a path, pass it through \code{\link[fs:path]{fs::path()}} or otherwise give it the
@@ -58,11 +66,17 @@ this to \code{NULL} to return the raw response from \code{\link[httr2:req_perfor
 \item{next_req}{An optional function that takes the previous response
 (\code{resp}) to generate the next request in a call to
 \code{\link[httr2:req_perform_iterative]{httr2::req_perform_iterative()}}. This function can usually be generated
-using \code{\link[httr2:iterate_with_offset]{httr2::iterate_with_offset()}}, \code{\link[httr2:iterate_with_offset]{httr2::iterate_with_cursor()}}, or
-\code{\link[httr2:iterate_with_offset]{httr2::iterate_with_link_url()}}.}
+using one of the iteration helpers described in
+\code{\link[httr2:iterate_with_offset]{httr2::iterate_with_offset()}}.}
 
-\item{max_reqs}{The maximum number of requests to perform. Use \code{Inf} to
-perform all requests until \code{next_req()} returns \code{NULL}.}
+\item{max_reqs}{The maximum number of separate requests to perform. Passed to
+the max_reqs argument of \code{\link[httr2:req_perform_iterative]{httr2::req_perform_iterative()}} when \code{next_req}
+is supplied. The default \code{2} should likely be changed to \code{Inf} after you
+validate the function.}
+
+\item{max_tries_per_req}{The maximum number of times to attempt each
+individual request. Passed to the \code{max_tries} argument of
+\code{\link[httr2:req_retry]{httr2::req_retry()}}.}
 
 \item{user_agent}{A string to identify where this request is coming from.
 It's polite to set the user agent to identify your package, such as
@@ -77,4 +91,8 @@ intended to be used inside an API client package. It serves as a wrapper
 around the \code{req_} family of functions, such as \code{\link[httr2:request]{httr2::request()}}, as well as
 \code{\link[httr2:req_perform]{httr2::req_perform()}} and \code{\link[httr2:req_perform_iterative]{httr2::req_perform_iterative()}}, and, by default,
 \code{\link[httr2:resp_body_raw]{httr2::resp_body_json()}}.
+}
+\seealso{
+\code{\link[=req_setup]{req_setup()}}, \code{\link[=req_modify]{req_modify()}}, \code{\link[=req_perform_opinionated]{req_perform_opinionated()}},
+\code{\link[=resp_parse]{resp_parse()}}, and \code{\link[=do_if_fn_defined]{do_if_fn_defined()}} for finer control of the process.
 }
